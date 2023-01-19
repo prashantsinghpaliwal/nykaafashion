@@ -1,3 +1,4 @@
+<img src="ssgif.gif" width="200">
 # nykaafashion
 
 **Nykaa Fashion** is a Simple Android App to show list of products. It has been built with *Latest Android development* techniques. 
