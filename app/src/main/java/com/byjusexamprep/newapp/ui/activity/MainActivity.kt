@@ -33,7 +33,6 @@ class MainActivity : ComponentActivity() {
         }
     }
 
-    //    @OptIn(ExperimentalFoundationApi::class)
     @Composable
     fun HomeComposable(modifier: Modifier = Modifier, viewModel: MainViewModel) {
         val list = viewModel.list.collectAsLazyPagingItems()
@@ -117,11 +116,6 @@ class MainActivity : ComponentActivity() {
                                 }
                             }
                         }
-
-                    }
-
-
-                    when (list.loadState.refresh) {
 
                     }
                 }

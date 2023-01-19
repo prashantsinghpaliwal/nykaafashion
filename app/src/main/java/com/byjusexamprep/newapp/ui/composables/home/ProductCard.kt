@@ -66,7 +66,6 @@ fun ProductCard(product : Product){
                 maxLines = 2,
                 style = RobotoBold333333_16,
                 modifier = Modifier
-//                    .align(Alignment.CenterHorizontally)
                     .padding(horizontal = 8.dp)
             )
 
@@ -79,7 +78,6 @@ fun ProductCard(product : Product){
                 maxLines = 2,
                 style = RobotoMedium333333_16,
                 modifier = Modifier
-//                    .align(Alignment.CenterHorizontally)
                     .padding(horizontal = 8.dp)
             )
 
