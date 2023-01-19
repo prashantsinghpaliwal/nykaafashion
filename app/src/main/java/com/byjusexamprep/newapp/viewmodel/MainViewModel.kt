@@ -1,5 +1,6 @@
 package com.byjusexamprep.newapp.viewmodel
 
+import androidx.compose.runtime.collectAsState
 import androidx.lifecycle.*
 import androidx.paging.PagingData
 import androidx.paging.cachedIn
@@ -8,6 +9,7 @@ import androidx.paging.map
 import com.byjusexamprep.newapp.models.Product
 import com.byjusexamprep.newapp.repository.ProductRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 

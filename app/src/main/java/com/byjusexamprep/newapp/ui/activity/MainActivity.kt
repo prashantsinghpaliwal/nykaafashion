@@ -1,81 +1,133 @@
 package com.byjusexamprep.newapp.ui.activity
 
 import android.os.Bundle
-import android.util.Log
-import android.view.View
-import android.widget.Toast
-import androidx.activity.viewModels
-import androidx.appcompat.app.AppCompatActivity
-import androidx.core.view.isVisible
+import androidx.activity.ComponentActivity
+import androidx.activity.compose.setContent
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.material.CircularProgressIndicator
+import androidx.compose.material.Surface
+import androidx.compose.runtime.Composable
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.unit.dp
+import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.paging.LoadState
-import androidx.paging.filter
-import androidx.paging.map
-import androidx.recyclerview.widget.GridLayoutManager
-import com.byjusexamprep.newapp.databinding.ActivityMainBinding
-import com.byjusexamprep.newapp.paging.FooterAdapter
-import com.byjusexamprep.newapp.paging.ProductPagingAdapter
+import androidx.paging.compose.collectAsLazyPagingItems
+import androidx.paging.compose.items
+import com.byjusexamprep.newapp.ui.composables.home.Footer
+import com.byjusexamprep.newapp.ui.composables.home.ProductCard
 import com.byjusexamprep.newapp.viewmodel.MainViewModel
+import com.byjusexamprep.newapp.viewmodel.UiModel
 import dagger.hilt.android.AndroidEntryPoint
 
 @AndroidEntryPoint
-class MainActivity : AppCompatActivity() {
-
-    private lateinit var binding: ActivityMainBinding
-    private val mainViewModel: MainViewModel by viewModels()
-    private var pagingAdapter: ProductPagingAdapter? = null
-
+class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        binding = ActivityMainBinding.inflate(layoutInflater)
-        with(binding) {
-            setContentView(root)
-            setUpObservers()
-            setUpList()
+        setContent {
+            HomeComposable(viewModel = hiltViewModel())
         }
     }
 
-    private fun setUpList() {
-        pagingAdapter = ProductPagingAdapter()
-        val footerAdapter = FooterAdapter {
-            pagingAdapter?.retry()
-        }
+    //    @OptIn(ExperimentalFoundationApi::class)
+    @Composable
+    fun HomeComposable(modifier: Modifier = Modifier, viewModel: MainViewModel) {
+        val list = viewModel.list.collectAsLazyPagingItems()
 
-        val concatAdapter = pagingAdapter?.withLoadStateFooter(footer = footerAdapter)
-        val layoutManager = GridLayoutManager(this@MainActivity, 2)
+        Column(
+            modifier = modifier
+                .fillMaxSize()
+                .padding(12.dp),
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.Center
+        ) {
+            Surface {
 
-        with(binding) {
-            progressBar.visibility = View.VISIBLE
-            productList.layoutManager = layoutManager
-            layoutManager.spanSizeLookup = object : GridLayoutManager.SpanSizeLookup() {
-                override fun getSpanSize(position: Int): Int {
-                    return if ((position == concatAdapter?.itemCount?.minus(1))) {
-                        // if it is the last position and we have a footer
-                        2
-                    } else {
-                        1
+
+                LazyColumn {
+                    items(list) { model ->
+                        when (model) {
+                            is UiModel.ProductItem -> {
+                                ProductCard(product = model.product)
+                            }
+
+                            is UiModel.SeparatorItem -> {
+                                Footer(
+                                    footer =
+                                    com.byjusexamprep.newapp.models.Footer(
+                                        model.description,
+                                        "",
+                                        false
+                                    )
+                                ) {
+
+                                }
+                            }
+                        }
+
+                    }
+
+                    when {
+
+                        list.loadState.refresh is LoadState.Loading -> {
+                            item {
+                                Column(
+                                    modifier = modifier,
+                                    verticalArrangement = Arrangement.Center,
+                                    horizontalAlignment = Alignment.CenterHorizontally
+                                ) {
+                                    CircularProgressIndicator()
+                                }
+                            }
+                        }
+
+                        list.loadState.append is LoadState.NotLoading -> Unit
+
+                        list.loadState.append is LoadState.Loading -> {
+                            item {
+                                Footer(
+                                    footer =
+                                    com.byjusexamprep.newapp.models.Footer(
+                                        "",
+                                        "",
+                                        true
+                                    )
+                                ) {
+                                    // handle button click
+                                }
+                            }
+                        }
+
+                        list.loadState.append is LoadState.Error -> {
+                            item {
+                                Footer(
+                                    footer =
+                                    com.byjusexamprep.newapp.models.Footer(
+                                        (list.loadState.append as LoadState.Error).error.message.toString(),
+                                        "Retry",
+                                        false
+                                    )
+                                ) {
+                                    // handle button click
+                                    list.retry()
+                                }
+                            }
+                        }
+
+                    }
+
+
+                    when (list.loadState.refresh) {
+
                     }
                 }
+
+
             }
-
-            productList.adapter = concatAdapter
-            productList.setHasFixedSize(true)
-
-            pagingAdapter?.addLoadStateListener { loadStates ->
-                progressBar.isVisible = loadStates.source.refresh is LoadState.Loading
-                retryButton.isVisible = loadStates.source.refresh is LoadState.Error
-            }
-
-            retryButton.setOnClickListener {
-                pagingAdapter?.retry()
-            }
-        }
-
-    }
-
-    private fun setUpObservers() {
-        mainViewModel.list.observe(this@MainActivity) {
-            pagingAdapter?.submitData(lifecycle = lifecycle, pagingData = it)
-            binding.progressBar.visibility = View.GONE
         }
     }
 }

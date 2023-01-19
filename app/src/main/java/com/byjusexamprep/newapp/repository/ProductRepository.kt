@@ -2,7 +2,6 @@ package com.byjusexamprep.newapp.repository
 
 import androidx.paging.Pager
 import androidx.paging.PagingConfig
-import androidx.paging.liveData
 import com.byjusexamprep.newapp.paging.ProductPagingSource
 import com.byjusexamprep.newapp.retrofit.NykaaApi
 import javax.inject.Inject
@@ -15,7 +14,7 @@ class ProductRepository @Inject constructor(val nykaaApi: NykaaApi) {
             maxSize = 100
         ),
         pagingSourceFactory = { ProductPagingSource(nykaaApi) }
-    ).liveData
+    ).flow
 
 
 }
